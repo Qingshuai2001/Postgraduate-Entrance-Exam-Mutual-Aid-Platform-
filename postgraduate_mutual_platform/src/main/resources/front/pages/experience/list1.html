@@ -1,0 +1,293 @@
+
+<!-- 考研资讯 -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>经验贴分享</title>
+    <link rel="stylesheet" href="../../layui/css/layui.css">
+    <!-- 样式 -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <!-- 主题（主要颜色设置） -->
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <!-- 通用的css -->
+    <link rel="stylesheet" href="../../css/common.css" />
+
+    <link rel="stylesheet" href="../../css/blog/app.css" />
+    <link rel="stylesheet" href="../../css/blog/index.css" />
+
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../../elementui/index.css">
+
+
+</head>
+<body>
+
+<div id="app">
+
+
+
+    <!-- 图文列表 -->
+    <div class="data-container layui-row">
+        <h2 class="index-title"></h2>
+        <div class="line-container">
+            <p class="line"> 经验贴列表 </p>
+        </div>
+        <fieldset class="search-container">
+            <form class="layui-form">
+
+                <div class="layui-inline" style="margin-bottom: 20px;">
+                    <label class="layui-form-label"><i class="el-icon-s-opportunity"></i>标题</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="title" id="title" placeholder="请输入经验贴标题" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+<!--                <div class="layui-inline" style="margin-bottom: 10px;">-->
+<!--                    <label class="layui-form-label">分类</label>-->
+<!--                    <div class="layui-input-inline">-->
+<!--                        <input type="text" name="categoryName" id="categoryName" placeholder="请输入分类" autocomplete="off" class="layui-input">-->
+<!--                    </div>-->
+<!--                </div>-->
+                <div class="layui-inline" style="margin-bottom: 20px;" >
+                    <div class="layui-input-inline">
+                        <label class="layui-form-label"><i class="el-icon-price-tag"></i>类型</label>
+                        <div class="layui-input-block" style="margin-right: 20px">
+                            <select name="categoryName" id="categoryName" lay-filter="industry">
+                                <option value="">请选择分类</option>
+                                <option v-for="(item,index) in categoryNameOptions " v-bind:key="index" :value="item">{{item}}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="layui-inline" style="margin-left: 30px;margin-bottom: 10px;">
+                    <button id="btn-search" type="button" class="layui-btn">
+                        <i class="layui-icon layui-icon-search"></i> 搜索
+                    </button>
+<!--                    <button v-if="isAuth('experience','新增')" @click="jump('../experience/add.html')" type="button" class="layui-btn btn-theme">-->
+<!--                        <i class="layui-icon">&#xe654;</i> 添加-->
+<!--                    </button>-->
+                </div>
+            </form>
+        </fieldset>
+
+
+
+        <div class="container">
+            <div class="el-row" style="margin-left: -15px; margin-right: -15px;">
+                <div class="el-col el-col-24 el-col-sm-24 el-col-md-16" style="padding-left: 15px; padding-right: 15px; transition: all 0.5s ease-out 0s; margin-bottom: 30px;">
+                    <div class="sharelistBox el-row" v-for="(item,index) in dataList" v-bind:key="index">
+                        <div class="s-item tcommonBox el-col el-col-24" >
+                                    <span class="s-round-date">
+                                        <span class="month" v-html="showInitDate(item.publishTime,'month')+'月'"></span>
+                                        <span class="day" v-html="showInitDate(item.publishTime,'date')"></span>
+                                    </span>
+                            <header>
+                                <h1>
+                                    <a @click="jump('../experience/detail.html?id='+item.id)" target="_blank">
+                                        {{item.title}}
+                                    </a>
+                                </h1>
+                                <h2>
+                                    <i class="fa fa-fw fa-user"></i>发表于
+                                    <i class="fa fa-fw fa-clock-o"></i>
+                                    <!-- <span>2022年01月23日</span> • -->
+                                    <span v-html="showInitDate(item.publishTime,'all')">{{showInitDate(item.publishTime,'all')}}</span>
+                                    <i class="fa fa-fw fa-eye"></i>{{item.clickNum}} 次围观 •
+
+                                </h2>
+                                <div class="ui label">
+                                    <a href="#/Share?categoryName=">{{item.categoryName}}</a>
+                                </div>
+                            </header>
+                            <div class="article-content">
+                                <p style="text-indent: 2em;">
+                                    <!-- {{item.}} -->
+                                </p>
+                                <p style="max-height: 300px; overflow: hidden; text-align: center;">
+                                    <img :src="item.picture?item.picture.split(',')[0]:''" alt="" class="maxW">
+                                </p>
+                            </div>
+                            <div class="viewdetail">
+                                <a @click="jump('../experience/detail.html?id='+item.id)" target="_blank" class="tcolors-bg">
+                                    阅读全文&gt;&gt;
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="el-col el-col-24 el-col-sm-24 el-col-md-8" style="padding-left: 15px; padding-right: 15px;">
+                    <div class="rightlistBox">
+                        <div class="r1-head">
+                            <img src="../../img/background/background.gif" alt="你终硕">
+                            <h1>
+                                <span>一研为定</span>
+                            </h1>
+                        </div>
+
+                        <section class="rs4">
+                            <span style="font-size: 20px;font-weight: bold"> <el-icon class="el-icon-thumb"></el-icon>最热经验贴</span>
+                            <ul>
+                                <li v-for="(item, index) in browseList" :key="'browseList'+index">
+                                    <el-icon class="el-icon-position"></el-icon>
+                                    <a @click="jump('../experience/detail.html?id='+item.id)" target="_blank">{{index+1+'.'}}{{item.title}}</a>
+                                    —— {{ item.clickNum }} 次围观
+                                </li>
+
+                            </ul>
+                        </section>
+                        <section class="rs4">
+                            <span style="font-size: 20px;font-weight: bold"> <el-icon class="el-icon-thumb"></el-icon>最新经验贴</span>
+                            <ul>
+                                <li v-for="(item, index) in latestList" :key="'latestList'+index">
+                                    <el-icon class="el-icon-position"></el-icon>
+                                    <a @click="jump('../experience/detail.html?id='+item.id)" target="_blank">{{index+1+'.'}}{{item.title}}</a>
+                                    —— {{ item.clickNum }} 次围观
+                                </li>
+
+                            </ul>
+                        </section>
+                        <div class="toTop goTop hidden">
+                            <img src="../../img/index/banner4.jpg" alt="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="pager" id="pager"></div>
+    </div>
+    <!-- 图文列表 -->
+</div>
+
+
+<!-- layui -->
+<script src="../../layui/layui.js"></script>
+<!-- vue -->
+<script src="../../js/vue.js"></script>
+<!-- 组件配置信息 -->
+<script src="../../js/config.js"></script>
+<!-- 扩展插件配置信息 -->
+<script src="../../modules/config.js"></script>
+<!-- 工具方法 -->
+<script src="../../js/utils.js"></script>
+<script src="../../js/blog/server.js"></script>
+<script src="../../js/blog/axios-0.18.0.js"></script>
+
+<!-- 引入组件库 -->
+<script src="../../elementui/index.js"></script>
+
+<script>
+
+    const vue = new Vue({
+        el: '#app',
+        data: {
+            dataList: [],
+            categoryNameOptions: [],
+            browseList: [] ,//热门文章 浏览量最多
+            latestList: []
+        },
+        methods: {
+            isAuth(tablename, button) {
+                return isFrontAuth(tablename, button)
+            },
+            jump(url) {
+                jump(url)
+            },
+            showInitDate(oldDate, full) {
+                return initDate(oldDate, full)
+            },
+            getHotArticleList() {
+                axios.get("/postgraduate/experience/hotArticleList").then((res)=>{
+                    this.browseList = res.data.data;
+                });
+            },
+            getLatestArticleList() {
+                axios.get("/postgraduate/experience/latestArticleList").then((res)=>{
+                    this.latestList = res.data.data;
+                });
+            },
+            getCategory(){
+                axios.get("http://localhost:8080/postgraduate/option/category/category_name").then(({ data }) => {
+                    if (data && data.code === 0) {
+                        this.categoryNameOptions = data.data;
+                    } else {
+                        this.$message.error(data.msg);
+                    }
+                });
+            }
+        },
+        created(){
+            this.getHotArticleList();
+            this.getLatestArticleList();
+            this.getCategory()
+        }
+    });
+
+
+
+    layui.use(['layer', 'element', 'carousel', 'laypage','form', 'http', 'jquery'], function() {
+        var layer = layui.layer;
+        var element = layui.element;
+        var carousel = layui.carousel;
+        var laypage = layui.laypage;
+        var http = layui.http;
+        var jquery = layui.jquery;
+        var form = layui.form;
+
+        var limit = 5;
+
+        // 分页列表
+        pageList();
+
+        // 搜索按钮
+        jquery('#btn-search').click(function(e) {
+            pageList();
+        });
+
+
+        function pageList() {
+            var param = {
+                page: 1,
+                limit: limit,
+                status: '通过'
+            }
+
+            if (jquery('#title').val()) {
+                param['title'] = jquery('#title').val() ? '%' + jquery('#title').val() + '%' : '';
+            }
+            if (this.categoryName!=''&&jquery('#categoryName').val()) {
+                param['categoryName'] = jquery('#categoryName').val() ? '%' + jquery('#categoryName').val() + '%' : '';
+            }
+
+            // 获取列表数据
+            http.request('experience/list', 'get', param, function(res) {
+                vue.dataList = res.data.list
+                // 分页
+                laypage.render({
+                    elem: 'pager',
+                    count: res.data.total,
+                    limit: limit,
+                    curr: 1,
+                    groups: 3,
+                    layout: ['prev', 'page', 'next', 'limit', 'limits'],
+                    jump: function(obj, first) {
+                        param.page = obj.curr;
+                        //首次不执行
+                        if (!first) {
+                            http.request('experience/list', 'get', param, function(res) {
+                                vue.dataList = res.data.list
+                            })
+                        }
+                    }
+                });
+            })
+        }
+    });
+</script>
+</body>
+</html>

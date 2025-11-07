@@ -1,0 +1,268 @@
+<!-- 个人中心 -->
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>订单确认</title>
+		<link rel="stylesheet" href="../../layui/css/layui.css">
+		<!-- 样式 -->
+		<link rel="stylesheet" href="../../css/style.css" />
+		<!-- 主题（主要颜色设置） -->
+		<link rel="stylesheet" href="../../css/theme.css" />
+		<!-- 通用的css -->
+		<link rel="stylesheet" href="../../css/common.css" />
+	</head>
+	<body>
+
+		<div id="app">
+
+			<!-- 标题 -->
+			<h2 style="margin-top: 20px;" class="index-title"> </h2>
+			<div class="line-container">
+				<p class="line"> 确认下单 </p>
+			</div>
+			<!-- 标题 -->
+
+			<div class="container">
+				<h2>选择收货地址</h2>
+				<table class="layui-table address-table" lay-skin="nob" style="border: 2px dotted #83bbfc;margin: 20px 0;">
+					<thead>
+						<tr>
+							<th>选择</th>
+							<th>收件人姓名</th>
+							<th>联系电话</th>
+							<th>详细地址</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="(item,index) in addressList" v-bind:key="index">
+							<td><input type="radio" :value="index" name="address" /></td>
+							<td>{{item.userName}} </td>
+							<td>{{item.phone}}</td>
+							<td>{{item.detailAddress}}</td>
+						</tr>
+					</tbody>
+				</table>
+				<h2>清单列表</h2>
+				<table class="layui-table" lay-skin="nob" style="border: 2px dotted #83bbfc;margin: 20px 0;">
+					<thead>
+						<tr>
+							<th>购买商品名称</th>
+							<th>单价</th>
+							<th>数量</th>
+							<th>总价</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="(item,index) in dataList" v-bind:key="index">
+							<td style="display: flex;text-align: left;">
+								<img :src="item.picture" style="width: 100px;height: 100px;object-fit: cover;">
+								<div style="margin-left: 10px;margin-top: 10px;">
+									{{item.goodName}}
+								</div>
+							</td>
+							<td style="width: 100px;">{{item.price}} 元</td>
+							<td style="width: 140px;">
+								{{item.quantity}}
+							</td>
+
+							<td style="width: 100px;">{{item.price*item.quantity}} 元</td>
+						</tr>
+					</tbody>
+				</table>
+
+<!--				<div class="btn-container">-->
+<!--					<span style="font-size: 18px;font-weight: bold;color: #ce0b07;margin-right: 20px;">-->
+<!--						总价：{{dataList[0].totalPrice}} 元-->
+<!--					</span>-->
+<!--					<button @click="xuanzuoClick()" type="button" class="layui-btn layui-btn-lg btn-theme">-->
+<!--						<i class="layui-icon">&#xe657;</i> 支付-->
+<!--					</button>-->
+<!--				</div>-->
+<!--				-->
+				<div class="btn-container">
+					<span style="font-size: 18px;font-weight: bold;color: #ce0b07;margin-right: 20px;">
+						总价：{{totalPrice}}元
+					</span>
+					<button @click="payClick()" type="button" class="layui-btn layui-btn-lg btn-theme">
+						<i class="layui-icon">&#xe657;</i> 支付
+					</button>
+				</div>
+			</div>
+
+		</div>
+
+		<!-- layui -->
+		<script src="../../layui/layui.js"></script>
+		<!-- vue -->
+		<script src="../../js/vue.js"></script>
+		<!-- 组件配置信息 -->
+		<script src="../../js/config.js"></script>
+		<!-- 扩展插件配置信息 -->
+		<script src="../../modules/config.js"></script>
+		<!-- 工具方法 -->
+		<script src="../../js/utils.js"></script>
+		<!-- 校验格式工具类 -->
+		<script src="../../js/validate.js"></script>
+
+		<script>
+			var vue = new Vue({
+				el: '#app',
+				data: {
+					dataList: [],
+					addressList: [],
+					seat: 0,
+					type: 0,
+					// 当前用户信息
+					user: {}
+				},
+				computed: {
+					totalPrice: function() {
+						var totalPrice = 0;
+						for (var item of this.dataList) {
+							totalPrice += item.price * item.quantity
+						}
+						return totalPrice;
+					}
+				},
+				methods: {
+					jump(url) {
+						jump(url)
+					},
+					// 正常下单，生成订单，修改状态已支付
+					payClick() {
+						console.log('payClick')
+						var index = layui.jquery('input[name=address]:checked').val();
+						console.log(index);
+						if (!index) {
+							layui.layer.msg('请选择收货地址', {
+								time: 2000,
+								icon: 5
+							});
+							return
+						}
+
+						// 生成订单
+						for (let item of this.dataList) {
+							
+							// 获取商品详情信息
+							layui.http.request(`${item.tableName}/info/${item.goodId}`, 'get', {}, (res) => {
+								// 订单编号
+								var orderId = genTradeNo();
+								// res.data.status = 0;
+								let data = res.data;
+								if(item.tableName=='commodity'){
+									data.status = '已购买';
+
+								}
+								if(item.tableName=='material'){
+									data.status = '已购买';
+									data.downNum = data.downNum + 1;
+								}
+
+								data.delFlag = '0';
+								// 更新库存信息
+								layui.http.requestJson(`${item.tableName}/update`, 'post', data, (res) => {
+									// 添加订单信息
+									let order = {
+										orderId: orderId,
+										tableName: item.tableName,
+										userId: this.user.id,
+										userName: this.user.userName,
+										phone: this.addressList[index].phone,
+										goodId: item.goodId,
+										goodName: item.goodName,
+										picture: item.picture,
+										quantity: item.quantity,
+										price: item.price,
+										totalPrice: this.totalPrice,
+										detailAddress: this.addressList[index].detailAddress,
+										status: '未支付'
+									}
+									layui.http.requestJson(`orders/add`, 'post', order, (res) => {
+										// 减少余额，更新订单状态
+										// 判断余额是否充足
+										if (this.user.money < this.totalPrice) {
+											layui.layer.msg('余额不足，请先充值', {
+												time: 2000,
+												icon: 5
+											});
+											return
+										}
+
+										this.user.money = this.user.money - this.totalPrice;
+										// 更新用户余额
+										layui.http.requestJson(`${localStorage.getItem("userTable")}/update`, 'post', this.user, (res) => {
+											order.status = '已支付'
+											layui.http.request(`orders/list`, 'get', {
+												orderId: orderId,
+												page: 1,
+												limit: 1,
+											}, (res) => {
+												order.id = res.data.list[0].id;
+												layui.http.requestJson(`orders/update`, 'post', order, (res) => {
+													// 删除购物车数据(如果是购物车下单)
+													if (item.id) {
+														layui.http.requestJson(`cart/delete`, 'post', [item.id], (res) => {});
+													}
+													layui.layer.msg('购买成功', {
+														time: 2000,
+														icon: 6
+													}, function() {
+														window.location.href='../orders/list.html'
+													});
+												});
+											});
+										});
+									})
+								})
+							});
+						}
+					},
+				}
+			})
+
+			layui.use(['layer', 'element', 'carousel', 'http', 'jquery', 'form', 'upload'], function() {
+				var layer = layui.layer;
+				var element = layui.element;
+				var carousel = layui.carousel;
+				var http = layui.http;
+				var jquery = layui.jquery;
+				var form = layui.form;
+				var upload = layui.upload;
+
+
+				// 充值
+				jquery('#btn-recharge').click(function(e) {
+					layer.open({
+						type: 2,
+						title: '用户充值',
+						area: ['900px', '600px'],
+						content: '../recharge/recharge.html'
+					});
+				});
+
+
+				// 获取地址数据
+				http.request('address/list', 'get', {
+					userId: localStorage.getItem('userId')
+				}, function(res) {
+					vue.addressList = res.data.list
+				})
+
+				// 获取商品购买的清单列表
+				var orderGoods = localStorage.getItem('orderGoods')
+				// 转换成json类型，localstorage保存的是string数据
+				vue.dataList = JSON.parse(orderGoods);
+
+				// 用户当前用户信息
+				let table = localStorage.getItem("userTable");
+				http.request(`${table}/session`, 'get', {}, function(data) {
+					vue.user = data.data;
+				});
+
+			});
+		</script>
+	</body>
+</html>

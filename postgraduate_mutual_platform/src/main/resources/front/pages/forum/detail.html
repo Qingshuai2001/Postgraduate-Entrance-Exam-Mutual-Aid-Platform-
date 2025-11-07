@@ -1,0 +1,124 @@
+<!-- 论坛详情 -->
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>论坛详情</title>
+		<link rel="stylesheet" href="../../layui/css/layui.css">
+		<!-- 样式 -->
+		<link rel="stylesheet" href="../../css/style.css" />
+		<!-- 主题（主要颜色设置） -->
+		<link rel="stylesheet" href="../../css/theme.css" />
+		<!-- 通用的css -->
+		<link rel="stylesheet" href="../../css/common.css" />
+
+		<link rel="stylesheet" href="../../elementui/index.css">
+		<style>
+			body{
+				background: url("../../img/background/bubble.gif");
+			}
+		</style>
+	</head>
+	<body>
+
+		<div id="app">
+
+			<!-- 标题 -->
+			<h2 class="index-title"></h2>
+			<div class="line-container">
+				<p class="line"> 论坛信息 </p>
+			</div>
+			<!-- 标题 -->
+
+			<div class="forum-container">
+				<h1 class="title" style="color: white">{{detail.title}}</h1>
+				<div class="auth-container" style="color: white">
+					<i class="el-icon-s-custom"></i>发布人：{{detail.userName}}  <i class="el-icon-time"></i>时间：{{detail.createdTime}}
+				</div>
+
+				<div class="content" style="color: whitesmoke;text-align: center"  v-html="detail.content">
+				</div>
+
+				<div class="bottom-container">
+					<div class="title" >
+						评论列表
+						<div class="banner"></div>
+					</div>
+					<div id="btn-add-win" class="btn">
+						点击评论
+					</div>
+				</div>
+
+				<div class="message-list">
+					<div class="message-item" v-for="(item,index) in dataList" v-bind:key="index">
+						<div class="username-container" style="color: white">
+							<img class="avator" :src="item.avatar ? item.avatar.split(',')[0]:image">
+<!--							<img :src="detail.picture?detail.picture.split(',')[0]:''" alt="" class="maxW">-->
+							<span class="username"><i class="el-icon-s-custom"></i>{{item.userName}}说: </span> &nbsp;&nbsp;{{item.content}}   <span style="margin-right: 10px;margin-left: 30px;"><i class="el-icon-time"></i>:{{item.createdTime}}</span>
+						</div>
+
+					</div>
+				</div>
+				<div class="pager" id="pager"></div>
+			</div>
+		</div>
+
+		<!-- layui -->
+		<script src="../../layui/layui.js"></script>
+		<!-- vue -->
+		<script src="../../js/vue.js"></script>
+		<!-- 组件配置信息 -->
+		<script src="../../js/config.js"></script>
+		<!-- 扩展插件配置信息 -->
+		<script src="../../modules/config.js"></script>
+		<!-- 工具方法 -->
+		<script src="../../js/utils.js"></script>
+		<script src="../../elementui/index.js"></script>
+
+		<script>
+			var vue = new Vue({
+				el: '#app',
+				data: {
+					detail: {
+					},
+					dataList: [],
+					image: '../../img/avator.png'
+				},
+				methods: {
+					jump(url) {
+						jump(url)
+					}
+				}
+			})
+
+			layui.use(['layer', 'element', 'carousel', 'laypage', 'http', 'jquery'], function() {
+				var layer = layui.layer;
+				var element = layui.element;
+				var carousel = layui.carousel;
+				var laypage = layui.laypage;
+				var http = layui.http;
+				var jquery = layui.jquery;
+
+				var id = http.getParam('id');
+
+				// 详情信息
+				http.request('forum/list/' + id, 'get', {}, function(res) {
+					vue.detail = res.data
+					vue.dataList = res.data.childs
+				});
+
+				// 添加评论
+				jquery('#btn-add-win').click(function(e) {
+					layer.open({
+						type: 2,
+						title: '添加评论',
+						area: ['600px', '300px'],
+						content: './add-comment.html?pid=' + vue.detail.id
+					});
+				})
+
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,38 @@
+/**
+ * 工具类css
+ */
+/* 嵌套文字横线 */
+.line-container {
+	width: 100%;
+	/*background: url(../img/line.gif) bottom center;*/
+	background: url("../img/index/topbanner.gif") ;
+	background-repeat: no-repeat;
+	text-align: center;
+	padding-bottom: 20px;
+	padding-top: 8px;
+	/*height: 50%;*/
+}
+
+.line-container1 {
+	width: 100%;
+	/*background: url(../img/line.gif) bottom center;*/
+	/*background: url("../img/index/topbanner.gif") ;*/
+	background-repeat: no-repeat;
+	text-align: center;
+	padding-bottom: 20px;
+	padding-top: 8px;
+	/*height: 50%;*/
+}
+
+.line {
+	font-size: 54px;
+	/*color: #643e33;*/
+	color: #a1631f;
+	line-height: 1;
+	font-weight: bold;
+	font-style: normal;
+}
+
+/**
+ * 工具类css end
+ */
